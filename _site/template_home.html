@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Fiets beweging in Antwerp</title>
+    <style>
+        body {
+            background-image: url('https://fullsuitcase.com/wp-content/uploads/2017/05/Off-the-beaten-path-in-Antwerp-by-bike-.jpg.webp');
+            background-size: cover;
+            background-repeat: repeat;
+            font-family: Arial, sans-serif;
+            color: white;
+        }
+
+        .container {
+            border-radius: 5%;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            color: white;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid white;
+        }
+        th {
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Fiets beweging in Antwerp</h1>
+        <p>Welkom op onze website voor het volgen van fietsbewegingen. Hier kunt u de realtime bewegingen van fietsen in Antwerpen bekijken.</p>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Station</th>
+                    <th>User</th>
+                    <th>Leent/Huurt</th>
+                    <th>Fiets</th>
+                    <th>Tijd</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Jinja and Markdown -->
+                
+                {% for movement in bike_movements %}
+                <tr>
+                    <td>{{ movement.station }}</td>
+                    <td>{{ movement.gebruiker }}</td>
+                    <td>{{ movement.actie }}</td>
+                    <td>{{ movement.bike_id }}</td>
+                    <td>{{ movement.time }}</td>
+                </tr>
+                {% endfor %}
+                
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

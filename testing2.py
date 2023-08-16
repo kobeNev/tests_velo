@@ -171,7 +171,7 @@ class main:
                         if slot.fiets is not None:  # Check if the slot has a bike
                             gebruiker.leen_fiets(slot.fiets)  # Lease the bike
                             print(
-                                f"Gebruiker {gebruiker.naam} leent fiets uit station {station.naam}"
+                                f"Gebruiker {gebruiker.naam} leent een fiets uit station {station.naam}"
                             )
 
     def stop(self):
@@ -185,13 +185,12 @@ class main:
                             gebruiker.fiets
                         )  # Return the bike to the slot
                         print(
-                            f"Gebruiker {gebruiker.naam} retourneert fiets bij station {station.naam}"
+                            f"Gebruiker {gebruiker.naam} retourneert een fiets bij station {station.naam}"
                         )
 
 
 if __name__ == "__main__":
     main_program = main()
-    print(Station("1", "test", 10).aantal_beschikbare_fietsen())
     input("duw op enter om te starten met het uitlenen van fietsen")
     main_program.start()
     input("duw op enter om te stoppen met het uitlenen van fietsen")
