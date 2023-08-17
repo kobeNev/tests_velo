@@ -12,7 +12,7 @@
         }
 
         .container {
-            border-radius: 5%;
+            border-radius: 5dvh;
             max-width: 800px;
             margin: 0 auto;
             padding: 20px;
@@ -44,11 +44,11 @@
         <table>
             <thead>
                 <tr>
-                    <th>Station</th>
-                    <th>User</th>
-                    <th>Leent/Huurt</th>
+                    <th>Actie</th>
                     <th>Fiets</th>
-                    <th>Tijd</th>
+                    <th>Station</th>
+                    <th>Naam</th>
+                    <th>Type</th>
                 </tr>
             </thead>
             <tbody>
@@ -56,11 +56,11 @@
                 
                 {% for movement in bike_movements %}
                 <tr>
-                    <td>{{ movement.station }}</td>
-                    <td>{{ movement.gebruiker }}</td>
                     <td>{{ movement.actie }}</td>
-                    <td>{{ movement.bike_id }}</td>
-                    <td>{{ movement.time }}</td>
+                    <td>{{ movement.fiets_id }}</td>
+                    <td>{{ movement.station }}</td>
+                    <td>{{ movement.naam }}</td>
+                    <td>{{ movement.type }}</td>
                 </tr>
                 {% endfor %}
                 

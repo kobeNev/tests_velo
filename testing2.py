@@ -1,10 +1,31 @@
 import json
 import random
 import time
+import pickle
+import sys
+import os
+from jinja2 import Environment, FileSystemLoader
+from datetime import datetime
 
-"""nu = time.time()
-print(time.localtime(nu))"""
 
+def generate_html(bike_movements):
+    # Initialize Jinja2 environment
+    bike_movements = json.load(open(bike_movements, "r"))
+    env = Environment(loader=FileSystemLoader("C:/Users/koben/OneDrive/AP/2de semester/Pyhton OOP ☺/exam_prep/_site")
+                      , trim_blocks=True, lstrip_blocks=True)
+
+    output_filename = f"_site/template_output.html"
+
+    template = env.get_template("template_home.html")
+
+    # Render the HTML template with bike movement data
+    rendered_html = template.render(bike_movements=bike_movements)
+
+    # Write the rendered HTML to the unique file
+    with open(output_filename, "w") as output_file:
+        output_file.write(rendered_html)
+
+    print(f"HTML file '{output_filename}' generated successfully.")
 
 class Fiets:
     def __init__(self, fiets_id):
@@ -63,17 +84,18 @@ class Gebruiker:
         self.fiets = []
         self.velo = velo
 
-    def leen_fiets(self, fiets):
+    def leen_fiets(self, naam, station):
         if len(self.fiets) < self.max_capaciteit:
-            self.fiets.append(fiets)
+            random_fiets = random.choice(station.sloten)
+            self.fiets.append(random_fiets.fiets)
             fiets_slot = None
             for station in self.velo.stations:
                 for slot in station.sloten:
-                    if slot.fiets == fiets:
+                    if slot.fiets == random_fiets.fiets:
                         fiets_slot = slot
                         break
                 if fiets_slot:
-                    fiets_slot.verwijder_fiets(fiets)
+                    fiets_slot.verwijder_fiets(random_fiets.fiets)
                     """print(
                         f"Fiets {fiets.fiets_id} geleend door {self.naam} uit slot {fiets_slot.slot_id}"
                     )"""
@@ -168,12 +190,12 @@ class Log:
 
     def in_fiets_gebruiker(self, station, naam, fiets):
         fiets_id_in = str(fiets) #zodat het geen null object doorgeeft
-        diction = {"type": "gebruiker", "actie": "in", "station": station, "naam": naam, "fiets id": fiets_id_in}
+        diction = {"type": "gebruiker", "actie": "in", "station": station, "naam": naam, "fiets_id": fiets_id_in}
         self.lijst.append(diction)
 
     def uit_fiets_gebruiker(self, station, naam, fiets):
         fiets_id_uit = str(fiets) #zodat het geen null object doorgeeft
-        diction = {"type": "gebruiker", "actie": "uit", "station": station, "naam": naam, "fiets id": fiets_id_uit}
+        diction = {"type": "gebruiker", "actie": "uit", "station": station, "naam": naam, "fiets_id": fiets_id_uit}
         self.lijst.append(diction)
 
     def opslaan_bestand(self):
@@ -186,20 +208,20 @@ class Log:
         for item in json_gegevens:
             print(item)
 
-class simulatie:
+class Simulatie:
     def __init__(self):
         self.log = Log("full_data.json")
-        print("Log object aangemaakt")
+        """print("Log object aangemaakt")"""
         self.velo = Velo()
-        print("Velo object aangemaakt")
+        """print("Velo object aangemaakt")"""
         self.velo.maak_stations_van_json()
-        print("Stations aangemaakt")
+        """print("Stations aangemaakt")"""
         self.velo.maak_fietsen()
-        print("Fietsen aangemaakt")
+        """print("Fietsen aangemaakt")"""
         self.velo.maak_gebruikers()
-        print("Gebruikers aangemaakt")
+        """print("Gebruikers aangemaakt")"""
         self.velo.plaats_fietsen_in_station()
-        print("Fietsen in stations geplaatst")
+        """print("Fietsen in stations geplaatst")"""
 
     def start(self):
         for gebruiker in self.velo.gebruikers:
@@ -215,6 +237,7 @@ class simulatie:
                             print(
                                 f"Gebruiker {gebruiker.naam} leent fiets {fiets_id} uit station {station.naam}"
                             )
+                            break
 
     def stop(self):
         for gebruiker in self.velo.gebruikers:
@@ -225,20 +248,106 @@ class simulatie:
                     slot = random.choice(station.sloten)
                     if slot.beschikbaar:
                         slot.plaats_fiets(gebruiker.fiets)  # Return the bike to the slot
-                        self.log.uit_fiets_gebruiker(station.naam, gebruiker.naam, fiets_id)
+                        self.log.in_fiets_gebruiker(station.naam, gebruiker.naam, fiets_id)
                         print(
                             f"Gebruiker {gebruiker.naam} retourneert fiets {fiets_id} bij station {station.naam}"
                         )
+                        break
+
+    def stop_velo(self):
+        print("\nKeyboardInterrupt gedetecteerd. Data wordt opgeslagen...")
+        with open('velo_data.pkl', 'wb') as f:
+            pickle.dump(sim_program.velo, f)
+        sim_program.log.opslaan_bestand()
+        print("Data saved. Exiting...")
+        sys.exit(0)
+
+
+def clear():
+    os.system("cls") # Ingesteld op Windows, voor Linux(mac): os.system("clear")
 
 
 if __name__ == "__main__":
-    sim_program = simulatie()
-    input("duw op enter om te starten met het uitlenen van fietsen")
-    sim_program.start()
-    input("duw op enter om te stoppen met het uitlenen van fietsen")
-    sim_program.stop()
-    sim_program.log.opslaan_bestand()
+    try:
+        clear()
+        print("             Welkom bij Velo!")
+        print("Het beste fietsverhuurbedrijf van Antwerpen!")
+        input("        Druk op enter om verder te gaan.")
+        clear()
+        sim_program = Simulatie()
 
+        while True:
+            print("      Wat wilt u doen?:")
+            print("    H: Handmatig invoeren")
+            print("   S: Een simulatie starten")
+            print("     G: De site genereren")
+            keuze = (input("   Q: de toepassing stoppen     \n")).upper()
+            if keuze == "H":
+                clear()
+                print("U koos voor handmatig invoeren.")
+                type = input("Wilt u een fiets lenen of terugbrengen? (L/T) ").upper()
+                if type == "L":
+                    clear()
+                    print("U koos voor een fiets lenen.")
+                    persoon = input("bent u een gebruiker of een transporteur? (G/T) ").upper()
+                    naam = input("Wat is uw naam? ")
+                    station = input("Bij welk station bent u? [1, 311]")
+                    if persoon == "G":
+                      #manier om de fiets uit te lenen
+                        print("U heeft de fiets uitgeleend.")
+                if type == "T":
+                    clear()
+                    print("U koos voor een fiets terugbrengen.")
+                    naam = input("Wat is uw naam? ")
+                    station = input("Bij welk station bent u? [1, 311]")
+                    print("U heeft de fiets teruggebracht.")
+                break
+            if keuze == "S":
+                clear()
+                voortgang = input("U koos voor een simulatie starten, wilt u verder gaan op de oude simulatie of een nieuwe starten? (O/N) ").upper()
+                if voortgang == "N":
+                    print("U koos voor een nieuwe simulatie.")
+                    print("U kan de simulatie op elk moment stoppen door op CTRL+C te drukken.")
+                    tijd = input("Hoe snel wilt u de simulatie laten lopen? [1,100] ")
+
+                    try:
+                        while True:
+                            option = random.randint(1, 3)
+                            time.sleep(1 / int(tijd))
+                            if option == 2:
+                                sim_program.start()
+                            if option == 3:
+                                sim_program.stop()
+
+                    except KeyboardInterrupt:
+                        sim_program.stop_velo()
+                    break
+                if voortgang == "O":
+                    print("U koos voor verder gaan op vorige simulatie.")
+                    try:
+                        with open('velo_data.pkl', 'rb') as f:
+                            saved_velo = pickle.load(f)
+                            Velo = saved_velo
+                            print("Vorige simulatie is ingeladen.")
+                    except FileNotFoundError:
+                        print("Geen vorige simulatiegegevens gevonden.")
+            if keuze == "G":
+                clear()
+                print("De site word gegenereerd.")
+                generate_html(bike_movements = "full_data.json")
+                break
+            if keuze == "Q":
+                clear()
+                print("De toepassing word gestopt.")
+                break
+            else:
+                clear()
+                print("U heeft geen geldige input gegeven. Probeer het opnieuw.")
+            
+            sim_program.stop_velo()
+   
+    except KeyboardInterrupt:
+        sim_program.stop_velo()
 
 #om bij te houden
 
