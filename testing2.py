@@ -10,6 +10,9 @@ class Fiets:
     def __init__(self, fiets_id):
         self.fiets_id = fiets_id
 
+    def __str__(self):
+        return f"{self.fiets_id}"
+
 
 class Slot:
     def __init__(self, slot_id):
@@ -148,8 +151,45 @@ class Velo:
         return f"Velo heeft {len(self.stations)} stations, {len(self.fietsen)} fietsen en {len(self.gebruikers)} gebruikers."
 
 
-class main:
+class Log:
+    def __init__(self, bestand):
+        self.bestand = bestand
+        self.lijst = []
+
+    def in_fiets_transporteur(self, station, aantal_fietsen, transporteur_id):
+        diction = {"type": "transporteur", "actie": "in", "station": station.naam,
+                   "aantal fietsen": aantal_fietsen, "id": transporteur_id}
+        self.lijst.append(diction)
+
+    def uit_fiets_transporteur(self, station, aantal_fietsen, transporteur_id):
+        diction = {"type": "transporteur", "actie": "uit", "station": station.naam,
+                   "aantal fietsen": aantal_fietsen, "id": transporteur_id}
+        self.lijst.append(diction)
+
+    def in_fiets_gebruiker(self, station, naam, fiets):
+        fiets_id_in = str(fiets) #zodat het geen null object doorgeeft
+        diction = {"type": "gebruiker", "actie": "in", "station": station, "naam": naam, "fiets id": fiets_id_in}
+        self.lijst.append(diction)
+
+    def uit_fiets_gebruiker(self, station, naam, fiets):
+        fiets_id_uit = str(fiets) #zodat het geen null object doorgeeft
+        diction = {"type": "gebruiker", "actie": "uit", "station": station, "naam": naam, "fiets id": fiets_id_uit}
+        self.lijst.append(diction)
+
+    def opslaan_bestand(self):
+        with open(self.bestand, "w") as json_file:
+            json.dump(self.lijst, json_file)
+
+    def uitelezen_bestand(self):
+        with open(self.bestand, "r") as json_file:
+            json_gegevens = json.load(json_file)
+        for item in json_gegevens:
+            print(item)
+
+class simulatie:
     def __init__(self):
+        self.log = Log("full_data.json")
+        print("Log object aangemaakt")
         self.velo = Velo()
         print("Velo object aangemaakt")
         self.velo.maak_stations_van_json()
@@ -169,29 +209,37 @@ class main:
                     slot = random.choice(station.sloten)
                     if not slot.beschikbaar:
                         if slot.fiets is not None:  # Check if the slot has a bike
+                            fiets_id = slot.fiets.fiets_id #zodat het geen null object doorgeeft
                             gebruiker.leen_fiets(slot.fiets)  # Lease the bike
+                            self.log.uit_fiets_gebruiker(station.naam, gebruiker.naam, fiets_id)
                             print(
-                                f"Gebruiker {gebruiker.naam} leent een fiets uit station {station.naam}"
+                                f"Gebruiker {gebruiker.naam} leent fiets {fiets_id} uit station {station.naam}"
                             )
 
     def stop(self):
         for gebruiker in self.velo.gebruikers:
             if gebruiker.fiets:  # Check if the user has a bike
+                fiets_id = gebruiker.fiets[0].fiets_id #zodat het geen null object doorgeeft
                 station = random.choice(self.velo.stations)
                 if station.aantal_beschikbare_slots() > 0:
                     slot = random.choice(station.sloten)
                     if slot.beschikbaar:
-                        slot.plaats_fiets(
-                            gebruiker.fiets
-                        )  # Return the bike to the slot
+                        slot.plaats_fiets(gebruiker.fiets)  # Return the bike to the slot
+                        self.log.uit_fiets_gebruiker(station.naam, gebruiker.naam, fiets_id)
                         print(
-                            f"Gebruiker {gebruiker.naam} retourneert een fiets bij station {station.naam}"
+                            f"Gebruiker {gebruiker.naam} retourneert fiets {fiets_id} bij station {station.naam}"
                         )
 
 
 if __name__ == "__main__":
-    main_program = main()
+    sim_program = simulatie()
     input("duw op enter om te starten met het uitlenen van fietsen")
-    main_program.start()
+    sim_program.start()
     input("duw op enter om te stoppen met het uitlenen van fietsen")
-    main_program.stop()
+    sim_program.stop()
+    sim_program.log.opslaan_bestand()
+
+
+#om bij te houden
+
+#print(self.velo.fietsen[1])
